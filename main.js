@@ -1,24 +1,24 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import { auth } from "./auth-page.js";
+import { initialize } from "./auth-utils.js";
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+const routes = {
+  "/auth": auth,
+};
 
-setupCounter(document.querySelector('#counter'))
+const rootDiv = document.getElementById("app");
+rootDiv.innerHTML = routes[window.location.pathname];
+
+const onNavigate = (pathname) => {
+  if (routes[pathname]) {
+    window.history.pushState({}, pathname, window.location.origin + pathname);
+    rootDiv.innerHTML = routes[pathname];
+  } else {
+    // redirect to 404 page if route not found
+  }
+};
+
+window.onpopstate = () => {
+  rootDiv.innerHTML = routes[window.location.pathname];
+};
+
+initialize();
