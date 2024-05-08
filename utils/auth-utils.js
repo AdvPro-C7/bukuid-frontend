@@ -17,16 +17,13 @@ const backendURL = "http://localhost:8080";
 
 // show or hide pop-up message
 function togglePopUp(message) {
-  const popup = document.getElementById("popup");
-  const popupMessage = document.getElementById("popup-message");
-  popupMessage.innerText = message;
-  popup.style.display = message ? "block" : "none";
+  document.getElementById("popup-message").innerText = message;
+
+  document.getElementById("popup").style.display = message ? "block" : "none";
 }
 
 // encrypt password using SHA256
-function encryptPassword(input) {
-  return CryptoJS.SHA256(input.value).toString();
-}
+const encryptPassword = (input) => CryptoJS.SHA256(input.value).toString();
 
 // // add CSRF token to the request headers
 // function addCsrfToken(headers) {
@@ -49,27 +46,48 @@ async function handleSubmit(url, data) {
       body: JSON.stringify(data),
     });
 
-    const message = await response.json().message;
+    const body = await response.json();
 
     if (response.ok) {
-      togglePopUp(message);
+      togglePopUp(body.message);
+
       if (url.includes("login")) {
+        document.cookie = body.token;
+
         window.location.href = "/home";
       }
     } else {
-      togglePopUp(message || "An error occurred.");
+      togglePopUp(body.message || "An error occurred.");
     }
   } catch (error) {
     console.error("Error:", error);
+
     togglePopUp("An error occurred.");
   }
 }
 
+// initialize the accordions
+function initAccordions() {
+  const accordions = document.querySelectorAll(".accordion-btn");
+
+  accordions.forEach((accordion) => {
+    accordion.addEventListener("click", function () {
+      const content = this.parentNode.nextElementSibling;
+
+      content.style.maxHeight = content.style.maxHeight
+        ? null
+        : content.scrollHeight + "px";
+
+      this.querySelector(".icon").classList.toggle("active-icon");
+    });
+  });
+}
+
 // initialize the page
-async function initialize() {
+async function init() {
   // await fetchToken();
 
-  // Attach event listeners
+  // add event listener for registration form submission
   document
     .getElementById("reg-submit-btn")
     .addEventListener("click", async function () {
@@ -87,8 +105,15 @@ async function initialize() {
           password: encryptedPassword,
         });
       }
+
+      // clear form fields
+      document.getElementById("reg-username").value = "";
+      document.getElementById("reg-email-address").value = "";
+      document.getElementById("reg-phone-number").value = "";
+      document.getElementById("reg-password").value = "";
     });
 
+  // add event listener for login form submission
   document
     .getElementById("login-submit-btn")
     .addEventListener("click", async function () {
@@ -100,26 +125,18 @@ async function initialize() {
       });
     });
 
-  const accordions = document.querySelectorAll(".accordion-btn");
+  // initialize accordions
+  initAccordions();
 
-  accordions.forEach((accordion) => {
-    accordion.addEventListener("click", function () {
-      const content = this.parentNode.nextElementSibling;
-      content.style.maxHeight = content.style.maxHeight
-        ? null
-        : content.scrollHeight + "px";
-      this.querySelector(".icon").classList.toggle("active-icon");
-    });
-  });
-
+  // add event listener to close button for popup
   document.addEventListener("DOMContentLoaded", function () {
     let closeButton = document.querySelector(".close-btn");
 
-    closeButton.addEventListener("click", function () {
-      let popup = document.getElementById("popup");
-      popup.style.display = "none";
-    });
+    closeButton.addEventListener(
+      "click",
+      () => (document.getElementById("popup").style.display = "none")
+    );
   });
 }
 
-export { initialize };
+export { init };

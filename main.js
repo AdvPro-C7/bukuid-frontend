@@ -1,24 +1,35 @@
-import { auth } from "./auth-page.js";
-import { initialize } from "./auth-utils.js";
+import { home } from "./pages/home-page.js";
+import { auth } from "./pages/auth-page.js";
+// import { init as initHome } from "./utils/home-utils.js";
+import { init as initAuth } from "./utils/auth-utils.js";
 
 const routes = {
-  "/auth": auth,
+  "/": { content: home, init: null },
+  "/home": { content: home, init: null },
+  "/auth": { content: auth, init: initAuth },
 };
 
 const rootDiv = document.getElementById("app");
-rootDiv.innerHTML = routes[window.location.pathname];
 
 const onNavigate = (pathname) => {
-  if (routes[pathname]) {
+  const route = routes[pathname];
+  if (route) {
     window.history.pushState({}, pathname, window.location.origin + pathname);
-    rootDiv.innerHTML = routes[pathname];
+
+    rootDiv.innerHTML = route.content;
+
+    if (route.init) route.init();
   } else {
     // redirect to 404 page if route not found
   }
 };
 
 window.onpopstate = () => {
-  rootDiv.innerHTML = routes[window.location.pathname];
+  const route = routes[window.location.pathname];
+
+  rootDiv.innerHTML = route ? route.content : "";
+
+  if (route && route.init) route.init();
 };
 
-initialize();
+onNavigate(window.location.pathname);
