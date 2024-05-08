@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            max-height: 400px; 
+            overflow-y: auto;
+        }
+
+        
+        .scrollable-content {
+            overflow-y: auto;
+        }
+        
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-2xl font-bold mb-8">Order History</h1>
+
+        <!-- Navbar -->
+        <div class="flex mb-8">
+            <button id="notYetPaidBtn" class="mr-4 bg-blue-500 text-white px-4 py-2 rounded-md">Not Yet Paid</button>
+            <button id="paidBtn" class="bg-green-500 text-white px-4 py-2 rounded-md">Paid</button>
+        </div>
+
+        <!-- Not Yet Paid Section -->
+        <section id="notYetPaidSection" class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Waiting Payment</h2>
+            <div id="notYetPaidOrders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Order cards will be added dynamically here -->
+            </div>
+        </section>
+
+        <!-- Paid Section -->
+        <section id="paidSection" style="display:none;">
+            <h2 class="text-xl font-semibold mb-4">Waiting Shipping</h2>
+            <div id="paidOrders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Order cards  -->
+            </div>
+        </section>
+
+        <!-- Modal -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 class="font-bold">Order Items</h2>
+                <div class="scrollable-content">
+                    <ul id="orderItemsList"></ul>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const notYetPaidBtn = document.getElementById('notYetPaidBtn');
+            const paidBtn = document.getElementById('paidBtn');
+            const notYetPaidSection = document.getElementById('notYetPaidSection');
+            const paidSection = document.getElementById('paidSection');
+
+            notYetPaidBtn.addEventListener('click', function () {
+                notYetPaidSection.style.display = 'block';
+                paidSection.style.display = 'none';
+            });
+
+            paidBtn.addEventListener('click', function () {
+                notYetPaidSection.style.display = 'none';
+                paidSection.style.display = 'block';
+            });
+
+            // async Function to fetch orders 
+            async function fetchAndRenderOrders(url, containerId) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const orders = await response.json();
+                    console.log(orders);
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = '';
+                    orders.forEach(order => {
+                        const orderCard = document.createElement('div');
+                        orderCard.classList.add('bg-white', 'rounded-lg', 'p-6', 'shadow-md');
+                        orderCard.innerHTML = `
+                            <h3 class="text-lg font-semibold mb-2">Order ID: #${order.id}</h3>
+                            <p class="text-gray-600 mb-2">Total: $${order.totalPrice}</p>
+                            <p class="text-gray-600 mb-2">Order Items: <a href="#" class="text-blue-500 underline">See More</a></p>
+                            ${containerId === 'notYetPaidOrders' ?
+                                `<button class="bg-blue-500 text-white px-4 py-2 rounded-md">Pay Now</button>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded-md mt-2">Cancel Order</button>` :
+                                `<button class="bg-green-500 text-white px-4 py-2 rounded-md">Items On The Way</button>`}
+                        `;
+                        container.appendChild(orderCard);
+
+                        const seeMoreLink = orderCard.querySelector('a');
+                        seeMoreLink.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            showModal(order.cartItems);
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error fetching orders:', error);
+                }
+            }
+
+            function showModal(items) {
+                const modal = document.getElementById('myModal');
+                const modalContent = modal.querySelector('.modal-content');
+                const orderItemsList = modal.querySelector('#orderItemsList');
+
+                orderItemsList.innerHTML = '';
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.bookName} - Quantity: ${item.quantity}`;
+                    orderItemsList.appendChild(li);
+                });
+
+                // Show modal
+                modal.style.display = 'block';
+
+
+                const closeButton = modal.querySelector('.close');
+                closeButton.onclick = function () {
+                    modal.style.display = 'none';
+                }
+
+
+                window.onclick = function (event) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+            }
+
+            // Unpaid 
+            fetchAndRenderOrders('http://localhost:8080/api/customer/orders/waiting-payment/1', 'notYetPaidOrders');
+
+            // Paid
+            fetchAndRenderOrders('http://localhost:8080/api/customer/orders/waiting-shipping/1', 'paidOrders');
+        });
+    </script>
+</body>
+
+</html>
