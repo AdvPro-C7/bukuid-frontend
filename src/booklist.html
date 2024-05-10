@@ -8,23 +8,36 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg">
         <h1 class="text-2xl font-bold mb-4 text-gray-700">Books</h1>
-        <div class="mb-4 flex flex-col space-y-2">
+        <div class="mb-4 flex flex-col space-y-4">
             <input type="text" id="searchInput" placeholder="Search by keyword"
                 class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            <select id="sortInput"
-                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <option value="newest">Newest</option>
-                <option value="popularity">Popularity</option>
-                <option value="priceAsc">Price (Low to High)</option>
-                <option value="priceDesc">Price (High to Low)</option>
-            </select>
+
+            <fieldset class="space-y-2">
+                <legend class="font-semibold text-gray-600">Sort By</legend>
+                <div>
+                    <input type="radio" name="sort" value="newest" id="sortNewest" checked>
+                    <label for="sortNewest">Newest</label>
+                </div>
+                <div>
+                    <input type="radio" name="sort" value="popularity" id="sortPopularity">
+                    <label for="sortPopularity">Popularity</label>
+                </div>
+                <div>
+                    <input type="radio" name="sort" value="priceAsc" id="sortPriceAsc">
+                    <label for="sortPriceAsc">Price (Low to High)</label>
+                </div>
+                <div>
+                    <input type="radio" name="sort" value="priceDesc" id="sortPriceDesc">
+                    <label for="sortPriceDesc">Price (High to Low)</label>
+                </div>
+            </fieldset>
+
             <button onclick="fetchBooks()" 
                 class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Search Books
             </button>
         </div>
         
-        <!-- Book Table -->
         <table class="table-auto w-full bg-gray-100 rounded-lg shadow">
             <thead>
                 <tr class="bg-blue-500 text-white">
@@ -34,7 +47,7 @@
                 </tr>
             </thead>
             <tbody id="bookList">
-                <!-- Rows will be dynamically added here -->
+
             </tbody>
         </table>
     </div>
@@ -42,9 +55,8 @@
     <script>
         async function fetchBooks() {
             const searchKeyword = document.getElementById('searchInput').value;
-            const sortCriteria = document.getElementById('sortInput').value;
+            const sortCriteria = document.querySelector('input[name="sort"]:checked').value;
 
-            // Constructing URL with search and sort parameters
             let url = `http://localhost:8080/book-list/search-sort?keyword=${encodeURIComponent(searchKeyword)}&sortBy=${encodeURIComponent(sortCriteria)}`;
 
             try {
@@ -82,10 +94,10 @@
                 bookList.appendChild(row);
             });
         }
-        
+
         window.onload = function() {
             fetchBooks();
-        };
+        }
     </script>
 </body>
 </html>
