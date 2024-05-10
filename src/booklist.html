@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book List</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg">
+        <h1 class="text-2xl font-bold mb-4 text-gray-700">Books</h1>
+        <div class="mb-4 flex flex-col space-y-2">
+            <input type="text" id="searchInput" placeholder="Search by keyword"
+                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            <select id="sortInput"
+                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <option value="newest">Newest</option>
+                <option value="popularity">Popularity</option>
+                <option value="priceAsc">Price (Low to High)</option>
+                <option value="priceDesc">Price (High to Low)</option>
+            </select>
+            <button onclick="fetchBooks()" 
+                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Search Books
+            </button>
+        </div>
+        
+        <!-- Book Table -->
+        <table class="table-auto w-full bg-gray-100 rounded-lg shadow">
+            <thead>
+                <tr class="bg-blue-500 text-white">
+                    <th class="px-4 py-2">Title</th>
+                    <th class="px-4 py-2">Author</th>
+                    <th class="px-4 py-2">Price ($)</th>
+                </tr>
+            </thead>
+            <tbody id="bookList">
+                <!-- Rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchBooks() {
+            const searchKeyword = document.getElementById('searchInput').value;
+            const sortCriteria = document.getElementById('sortInput').value;
+
+            // Constructing URL with search and sort parameters
+            let url = `http://localhost:8080/book-list/search-sort?keyword=${encodeURIComponent(searchKeyword)}&sortBy=${encodeURIComponent(sortCriteria)}`;
+
+            try {
+                let response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    let books = await response.json();
+                    updateBookList(books);
+                } else {
+                    console.error("Error fetching books:", response.status, await response.text());
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+            }
+        }
+
+        function updateBookList(books) {
+            const bookList = document.getElementById('bookList');
+            bookList.innerHTML = ''; // Clear current rows
+
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                row.className = "bg-white border-b hover:bg-gray-50 transition-colors";
+
+                row.innerHTML = `
+                    <td class="px-4 py-2">${book.title}</td>
+                    <td class="px-4 py-2">${book.author}</td>
+                    <td class="px-4 py-2">$${book.price}</td>
+                `;
+
+                bookList.appendChild(row);
+            });
+        }
+        
+        window.onload = function() {
+            fetchBooks();
+        };
+    </script>
+</body>
+</html>
