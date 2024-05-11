@@ -1,11 +1,11 @@
 import { home } from "./pages/home-page.js";
 import { auth } from "./pages/auth-page.js";
-// import { init as initHome } from "./utils/home-utils.js";
+import { init as initHome } from "./utils/home-utils.js";
 import { init as initAuth } from "./utils/auth-utils.js";
 
 const routes = {
-  "/": { content: home, init: null },
-  "/home": { content: home, init: null },
+  "/": { content: home, init: initHome },
+  "/home": { content: home, init: initHome },
   "/auth": { content: auth, init: initAuth },
 };
 

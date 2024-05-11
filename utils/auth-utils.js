@@ -1,9 +1,9 @@
-const backendURL = "http://localhost:8080";
+const domain = "http://localhost:8080";
 
 // // fetch CSRF token from the backend
 // async function fetchToken() {
 //   try {
-//     const response = await fetch(backendURL + "/csrf-token");
+//     const response = await fetch(domain + "/csrf-token");
 //     if (response.ok) {
 //       const { token } = await response.json();
 //       localStorage.setItem("csrfToken", token);
@@ -35,14 +35,15 @@ const encryptPassword = (input) => CryptoJS.SHA256(input.value).toString();
 // }
 
 // handle registration or login form submission
-async function handleSubmit(url, data) {
+async function handleSubmit(endpoint, data) {
   try {
-    const response = await fetch(url, {
+    const response = await fetch(domain + endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         // ...addCsrfToken({}),
       },
+      credentials: "include",
       body: JSON.stringify(data),
     });
 
@@ -51,9 +52,7 @@ async function handleSubmit(url, data) {
     if (response.ok) {
       togglePopUp(body.message);
 
-      if (url.includes("login")) {
-        document.cookie = body.token;
-
+      if (endpoint.includes("login")) {
         window.location.href = "/home";
       }
     } else {
@@ -85,58 +84,71 @@ function initAccordions() {
 
 // initialize the page
 async function init() {
-  // await fetchToken();
+  const response = await fetch(domain + "/authenticate", {
+    method: "GET",
+    credentials: "include",
+  });
 
-  // add event listener for registration form submission
-  document
-    .getElementById("reg-submit-btn")
-    .addEventListener("click", async function () {
-      const username = document.getElementById("reg-username").value;
+  const body = await response.json();
 
-      if (username.includes("#")) {
-        togglePopUp("Username cannot contain hash.");
-      } else {
+  if (response.ok) {
+    window.location.href = "/home";
+  } else {
+    // await fetchToken();
+
+    // add event listener for registration form submission
+    document
+      .getElementById("reg-submit-btn")
+      .addEventListener("click", async function () {
+        const username = document.getElementById("reg-username").value;
+
+        if (username.includes("#")) {
+          togglePopUp("Username cannot contain hash.");
+        } else {
+          const encryptedPassword = encryptPassword(
+            this.previousElementSibling
+          );
+
+          await handleSubmit("/register", {
+            name: username,
+            emailAddress: document.getElementById("reg-email-address").value,
+            phoneNumber: document.getElementById("reg-phone-number").value,
+            password: encryptedPassword,
+          });
+        }
+
+        // clear form fields
+        document.getElementById("reg-username").value = "";
+        document.getElementById("reg-email-address").value = "";
+        document.getElementById("reg-phone-number").value = "";
+        document.getElementById("reg-password").value = "";
+      });
+
+    // add event listener for login form submission
+    document
+      .getElementById("login-submit-btn")
+      .addEventListener("click", async function () {
         const encryptedPassword = encryptPassword(this.previousElementSibling);
 
-        await handleSubmit(backendURL + "/register", {
-          name: username,
-          emailAddress: document.getElementById("reg-email-address").value,
-          phoneNumber: document.getElementById("reg-phone-number").value,
+        await handleSubmit("/login", {
+          id: document.getElementById("login-id").value,
           password: encryptedPassword,
         });
-      }
-
-      // clear form fields
-      document.getElementById("reg-username").value = "";
-      document.getElementById("reg-email-address").value = "";
-      document.getElementById("reg-phone-number").value = "";
-      document.getElementById("reg-password").value = "";
-    });
-
-  // add event listener for login form submission
-  document
-    .getElementById("login-submit-btn")
-    .addEventListener("click", async function () {
-      const encryptedPassword = encryptPassword(this.previousElementSibling);
-
-      await handleSubmit(backendURL + "/login", {
-        id: document.getElementById("login-id").value,
-        password: encryptedPassword,
       });
+
+    // initialize accordions
+    initAccordions();
+
+    // add event listener to close button for popup
+    document.addEventListener("DOMContentLoaded", function () {
+      let closeButton = document.querySelector(".close-btn");
+
+      closeButton.addEventListener(
+        "click",
+        () => (document.getElementById("popup").style.display = "none")
+      );
     });
-
-  // initialize accordions
-  initAccordions();
-
-  // add event listener to close button for popup
-  document.addEventListener("DOMContentLoaded", function () {
-    let closeButton = document.querySelector(".close-btn");
-
-    closeButton.addEventListener(
-      "click",
-      () => (document.getElementById("popup").style.display = "none")
-    );
-  });
+  }
 }
 
 export { init };
