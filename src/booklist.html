@@ -44,6 +44,8 @@
                     <th class="px-4 py-2">Title</th>
                     <th class="px-4 py-2">Author</th>
                     <th class="px-4 py-2">Price ($)</th>
+                    <th class="px-4 py-2">Sold</th>
+                    <th class="px-4 py-2">Publish Date</th>
                 </tr>
             </thead>
             <tbody id="bookList">
@@ -57,7 +59,7 @@
             const searchKeyword = document.getElementById('searchInput').value;
             const sortCriteria = document.querySelector('input[name="sort"]:checked').value;
 
-            let url = `http://localhost:8080/book-list/search-sort?keyword=${encodeURIComponent(searchKeyword)}&sortBy=${encodeURIComponent(sortCriteria)}`;
+            let url = `http://localhost:8080/api/book-list/search-sort?keyword=${encodeURIComponent(searchKeyword)}&sortBy=${encodeURIComponent(sortCriteria)}`;
 
             try {
                 let response = await fetch(url, {
@@ -89,6 +91,8 @@
                     <td class="px-4 py-2">${book.title}</td>
                     <td class="px-4 py-2">${book.author}</td>
                     <td class="px-4 py-2">$${book.price}</td>
+                    <td class="px-4 py-2">${book.sold}</td>
+                    <td class="px-4 py-2">${book.publishDate}</td>
                 `;
 
                 bookList.appendChild(row);
