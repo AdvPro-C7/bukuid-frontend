@@ -84,14 +84,26 @@ function initAccordions() {
 
 // initialize the page
 async function init() {
+  // initialize accordions
+  initAccordions();
+
+  // add event listener to close button for popup
+  document.addEventListener("DOMContentLoaded", function () {
+    let closeButton = document.querySelector(".close-btn");
+
+    closeButton.addEventListener(
+      "click",
+      () => (document.getElementById("popup").style.display = "none")
+    );
+  });
+
   const response = await fetch(domain + "/authenticate", {
     method: "GET",
     credentials: "include",
   });
 
-  const body = await response.json();
-
   if (response.ok) {
+    const body = await response.json();
     window.location.href = "/home";
   } else {
     // await fetchToken();
@@ -135,19 +147,6 @@ async function init() {
           password: encryptedPassword,
         });
       });
-
-    // initialize accordions
-    initAccordions();
-
-    // add event listener to close button for popup
-    document.addEventListener("DOMContentLoaded", function () {
-      let closeButton = document.querySelector(".close-btn");
-
-      closeButton.addEventListener(
-        "click",
-        () => (document.getElementById("popup").style.display = "none")
-      );
-    });
   }
 }
 

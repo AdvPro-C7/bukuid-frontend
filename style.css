@@ -213,3 +213,16 @@ footer a:hover {
 h2 {
   margin-bottom: 8px;
 }
+
+.book-item {
+  display: flex;
+  margin-bottom: 2rem;
+  cursor: pointer;
+}
+
+.book-cover {
+  width: 20rem;
+  height: 24rem;
+  border: 1px solid #000;
+  margin-right: 2rem;
+}
