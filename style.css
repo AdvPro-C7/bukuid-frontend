@@ -221,8 +221,10 @@ h2 {
 }
 
 .book-cover {
-  width: 20rem;
-  height: 24rem;
+  min-width: 20rem;
+  min-height: 24rem;
+  max-width: 20rem;
+  max-height: 24rem;
   border: 1px solid #000;
   margin-right: 2rem;
 }

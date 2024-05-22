@@ -1,4 +1,4 @@
-const domain = "http://localhost:8080";
+const domain = "https://auth-b4rcuut5xa-ew.a.run.app";
 
 // // fetch CSRF token from the backend
 // async function fetchToken() {
@@ -97,6 +97,46 @@ async function init() {
     );
   });
 
+  // await fetchToken();
+
+  // add event listener for registration form submission
+  document
+    .getElementById("reg-submit-btn")
+    .addEventListener("click", async function () {
+      const username = document.getElementById("reg-username").value;
+
+      if (username.includes("#")) {
+        togglePopUp("Username cannot contain hash.");
+      } else {
+        const encryptedPassword = encryptPassword(this.previousElementSibling);
+
+        await handleSubmit("/register", {
+          name: username,
+          emailAddress: document.getElementById("reg-email-address").value,
+          phoneNumber: document.getElementById("reg-phone-number").value,
+          password: encryptedPassword,
+        });
+      }
+
+      // clear form fields
+      document.getElementById("reg-username").value = "";
+      document.getElementById("reg-email-address").value = "";
+      document.getElementById("reg-phone-number").value = "";
+      document.getElementById("reg-password").value = "";
+    });
+
+  // add event listener for login form submission
+  document
+    .getElementById("login-submit-btn")
+    .addEventListener("click", async function () {
+      const encryptedPassword = encryptPassword(this.previousElementSibling);
+
+      await handleSubmit("/login", {
+        id: document.getElementById("login-id").value,
+        password: encryptedPassword,
+      });
+    });
+
   const response = await fetch(domain + "/authenticate", {
     method: "GET",
     credentials: "include",
@@ -105,48 +145,6 @@ async function init() {
   if (response.ok) {
     const body = await response.json();
     window.location.href = "/home";
-  } else {
-    // await fetchToken();
-
-    // add event listener for registration form submission
-    document
-      .getElementById("reg-submit-btn")
-      .addEventListener("click", async function () {
-        const username = document.getElementById("reg-username").value;
-
-        if (username.includes("#")) {
-          togglePopUp("Username cannot contain hash.");
-        } else {
-          const encryptedPassword = encryptPassword(
-            this.previousElementSibling
-          );
-
-          await handleSubmit("/register", {
-            name: username,
-            emailAddress: document.getElementById("reg-email-address").value,
-            phoneNumber: document.getElementById("reg-phone-number").value,
-            password: encryptedPassword,
-          });
-        }
-
-        // clear form fields
-        document.getElementById("reg-username").value = "";
-        document.getElementById("reg-email-address").value = "";
-        document.getElementById("reg-phone-number").value = "";
-        document.getElementById("reg-password").value = "";
-      });
-
-    // add event listener for login form submission
-    document
-      .getElementById("login-submit-btn")
-      .addEventListener("click", async function () {
-        const encryptedPassword = encryptPassword(this.previousElementSibling);
-
-        await handleSubmit("/login", {
-          id: document.getElementById("login-id").value,
-          password: encryptedPassword,
-        });
-      });
   }
 }
 
